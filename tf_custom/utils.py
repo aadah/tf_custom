@@ -1,4 +1,5 @@
 import string
+import os
 import random
 import yaml
 import numpy as np
@@ -12,6 +13,15 @@ def random_string(length=6, source=string.ascii_letters+string.digits):
 def load_options(options_path):
     with open(options_path, 'r') as f:
         opts = yaml.load(f)
+
+    def _expand_vars(d):
+        for k, v in d.items():
+            if type(v) == str:
+                d[k] = os.path.expandvars(v)
+            elif type(v) == dict:
+                _expand_vars(v)
+
+    _expand_vars(opts)
     return opts
 
 

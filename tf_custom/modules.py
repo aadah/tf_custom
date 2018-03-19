@@ -86,6 +86,59 @@ class SingleLayer(abstract.Module):
         return outputs
 
 
+class FeedForward(abstract.Module):
+    def init(self, input_dim, output_dim,
+             num_layers=None,
+             hidden_dim=None,
+             hidden_dims=None,
+             use_bias=True,
+             activation='relu',
+             output_activation=None,
+             leaky_relu_alpha=None,
+             dropout_prob=None,
+             weights_initializer=None,
+             bias_initializer=None):
+
+        self.input_dim = input_dim
+        self.output_dim = output_dim
+        self.dims = []
+        if num_layers is not None:
+            if hidden_dim is not None:
+                for _ in range(num_layers-1):
+                    self.dims.append(hidden_dim)
+            else:
+                raise Exception("Need to specify `hidden_dim` if using `num_layers`.")
+        else:
+            if hidden_dims is not None:
+                self.dims.extend(hidden_dims)
+            else:
+                raise Exception("Need to specify `hidden_dims` if not using `num_layers`.")
+
+        self.dims.append(self.output_dim)
+        self.num_layers = len(self.dims)
+
+        self.layers = []
+        for i, out_dim in enumerate(self.dims):
+            in_dim = self.input_dim if i == 0 else self.dims[i-1]
+            layer_activation = output_activation if i == self.num_layers - 1 else activation
+
+            layer = SingleLayer(in_dim, out_dim,
+                                name='layer{}'.format(i+1),
+                                use_bias=use_bias,
+                                activation=layer_activation,
+                                leaky_relu_alpha=leaky_relu_alpha,
+                                dropout_prob=dropout_prob,
+                                weights_initializer=weights_initializer,
+                                bias_initializer=bias_initializer)
+
+            self.layers.append(layer)
+
+    def call(self, inputs):
+        for layer in self.layers:
+            inputs = layer(inputs)
+        return tf.reshape(inputs, [-1])
+
+
 class ChanneledSingleLayer(abstract.Module):
     '''
     Like SingleLayer, but with separate parameters per channel.

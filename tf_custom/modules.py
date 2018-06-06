@@ -136,7 +136,7 @@ class FeedForward(abstract.Module):
     def call(self, inputs):
         for layer in self.layers:
             inputs = layer(inputs)
-        return tf.reshape(inputs, [-1])
+        return inputs
 
 
 class ChanneledSingleLayer(abstract.Module):
@@ -228,6 +228,16 @@ class ChanneledSingleLayer(abstract.Module):
         outputs = self.dropout(outputs)
 
         return outputs
+
+
+class Embeddings(abstract.Module):
+    def init(self, num_ids, emb_dim):
+        self.embeddings = tf.get_variable('embeddings',
+                                          dtype=tf.float32,
+                                          shape=[num_ids, emb_dim])
+
+    def call(self, ids):
+        return tf.nn.embedding_lookup(self.embeddings, ids)
 
 
 class Conv2DLayer(abstract.Module):

@@ -120,12 +120,12 @@ class GAN(Model):
 
 
 def main(args):
-    opts = utils.load_options(args.options)
+    config = utils.load_options(args.options)
     mnist = input_data.read_data_sets("../data/MNIST_data/")
 
-    gan = GAN(name=opts['name'],
+    gan = GAN(name=config['name'],
               initializer=tf.contrib.layers.xavier_initializer(),
-              params=opts['params']).compile()
+              params=config['params']).compile()
 
     if args.test:
         gan.load('../data/models/')

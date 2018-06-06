@@ -3,16 +3,21 @@ import os
 import random
 import yaml
 import numpy as np
-import matplotlib.pyplot as plt
+import tensorflow as tf
+
+
+def set_seed(seed):
+    tf.set_random_seed(seed)
+    random.seed(seed)
 
 
 def random_string(length=6, source=string.ascii_letters+string.digits):
     return ''.join(random.choice(source) for _ in range(length))
 
 
-def load_options(options_path):
-    with open(options_path, 'r') as f:
-        opts = yaml.load(f)
+def load_config(config_path):
+    with open(config_path, 'r') as f:
+        config = yaml.load(f)
 
     def _expand_vars(d):
         for k, v in d.items():
@@ -21,8 +26,8 @@ def load_options(options_path):
             elif type(v) == dict:
                 _expand_vars(v)
 
-    _expand_vars(opts)
-    return opts
+    _expand_vars(config)
+    return config
 
 
 def plot_pixels(pixels):

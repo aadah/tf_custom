@@ -73,11 +73,11 @@ class NN(Model):
         print(accuracy_score(y, y_))
 
 def main(args):
-    opts = utils.load_options(args.options)
+    config = utils.load_options(args.options)
     mnist = input_data.read_data_sets("../data/MNIST_data/", one_hot=True)
-    model = NN(name=opts['name'],
+    model = NN(name=config['name'],
                initializer=tf.contrib.layers.xavier_initializer(),
-               params=opts['params']).compile()
+               params=config['params']).compile()
 
     if args.test:
         model.load('../data/models/')

@@ -27,28 +27,6 @@ class Module:
     def call(self, *args, **kwargs):
         raise NotImplemented
 
-    @property
-    def variables(self):
-        if tf.executing_eagerly():
-            return self._trainable_variables(self)
-        return tf.trainable_variables(self.vs.name)
-
-    def _trainable_variables(self, obj):
-        vars = []
-        if isinstance(obj, (tf.Variable, tfe.Variable)):
-            vars.append(obj)
-        elif isinstance(obj, Module):
-            for obj2 in obj.__dict__.values():
-                vars.extend(self._trainable_variables(obj2))
-        elif isinstance(obj, (list, tuple)):
-            for obj2 in obj:
-                vars.extend(self._trainable_variables(obj2))
-        elif isinstance(obj, dict):
-            for obj_key, obj_val in obj.items():
-                vars.extend(self._trainable_variables(obj_key))
-                vars.extend(self._trainable_variables(obj_val))
-        return vars
-
 
 class Model:
     def __init__(self, name=None,
@@ -74,8 +52,9 @@ class Model:
                                reuse=reuse) as vs:
             self.vs = vs
             self.init()
-            if not tf.executing_eagerly():
-                self.compile()
+
+        if not tf.executing_eagerly():
+            self.compile()
 
     def __call__(self, *args, **kwargs):
         with tf.variable_scope(self.vs):

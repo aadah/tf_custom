@@ -53,8 +53,7 @@ class Model:
             self.vs = vs
             self.init()
 
-        if not tf.executing_eagerly():
-            self.compile()
+        self.compile()
 
     def __call__(self, *args, **kwargs):
         with tf.variable_scope(self.vs):
@@ -77,36 +76,34 @@ class Model:
         raise NotImplemented
 
     def compile(self):
-        self.build()
-        self.saver = tf.train.Saver()
-        self.sess = tf.get_default_session()
-        if self.sess is None:
+        if tf.executing_eagerly():
+            self.saver = tfe.Saver(self.variables)
+        else:
+            self.build()
+            self.saver = tf.train.Saver(self.variables)
             self.sess = tf.InteractiveSession()
-        self.init_vars()
-
+            self.init_vars()
         return self
 
     def init_vars(self):
         tf.global_variables_initializer().run()
         return self
 
-    def save(self, models_dir):
+    def save(self, models_dir, global_step=None):
+        path = os.path.join(models_dir, self.name, self.name)
         if tf.executing_eagerly():
-            vars = {v.name: v for v in self.variables}
-            checkpoint = tfe.Checkpoint(**vars)
-            checkpoint.save(os.path.join(models_dir, self.name, 'ckpt'))
+            self.saver.save(path, global_step=global_step)
         else:
-            self.saver.save(self.sess, os.path.join(models_dir, self.name))
+            self.saver.save(self.sess, path, global_step=global_step)
         return self
 
-    def load(self, models_dir):
+    def load(self, models_dir, global_step=None):
+        path = os.path.join(models_dir, self.name, self.name)
+        path = '{}-{}'.format(path, global_step) if global_step is not None else path
         if tf.executing_eagerly():
-            vars = {v.name: v for v in self.variables}
-            checkpoint = tfe.Checkpoint(**vars)
-            save_path = tf.train.latest_checkpoint(os.path.join(models_dir, self.name))
-            checkpoint.restore(save_path)
+            self.saver.restore(path)
         else:
-            self.saver.restore(self.sess, os.path.join(models_dir, self.name))
+            self.saver.restore(self.sess, path)
         return self
 
     def close(self):

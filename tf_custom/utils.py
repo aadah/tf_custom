@@ -5,9 +5,25 @@ import yaml
 import numpy as np
 import tensorflow as tf
 
+OPTIMIZERS = {
+    'gd': tf.train.GradientDescentOptimizer,
+    'adam': tf.train.AdamOptimizer,
+    'adagrad': tf.train.AdagradOptimizer,
+    'momentum': tf.train.MomentumOptimizer
+}
+
+
+def tensorboard(fn):
+    pass
+
+
+def get_optimizer(optimizer, learning_rate):
+    return OPTIMIZERS[optimizer](learning_rate=learning_rate)
+
 
 def set_seed(seed):
     tf.set_random_seed(seed)
+    np.random.seed(seed)
     random.seed(seed)
 
 

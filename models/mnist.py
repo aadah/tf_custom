@@ -53,7 +53,7 @@ class NN(Model):
     def train(self, dataset):
         for i in range(self.params['train']['num_iter']):
             X, Y = dataset.train.next_batch(self.params['train']['batch_size'])
-            lr = 1.0 / np.power(i + 2, self.params['train']['gamma'])
+            lr = 1.0 / np.power(i + 2, self.params['train']['alpha'])
             loss, _ = self.sess.run([self.loss, self.train_op], feed_dict={
                 self.X: X,
                 self.Y: Y,
